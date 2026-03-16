@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "codex/**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: small_ec_test
+          MYSQL_USER: app
+          MYSQL_PASSWORD: app
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm install
+      - run: npm install --workspace backend
+      - run: npm install --workspace frontend
+      - run: cp backend/.env.example backend/.env
+      - run: echo "DATABASE_URL=mysql://app:app@127.0.0.1:3306/small_ec_test" >> backend/.env
+      - run: npm run prisma:generate --workspace backend
+      - run: npm run prisma:migrate --workspace backend
+      - run: npm run prisma:seed --workspace backend
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build

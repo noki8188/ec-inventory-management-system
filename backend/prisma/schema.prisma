@@ -1,0 +1,133 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrderStatus {
+  CREATED
+  CONFIRMED
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum OperationType {
+  PRODUCT_CREATED
+  PRODUCT_UPDATED
+  PRODUCT_DELETED
+  INVENTORY_UPDATED
+  ORDER_STATUS_UPDATED
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  email        String         @unique
+  passwordHash String
+  name         String
+  role         Role           @default(USER)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  cartItems    CartItem[]
+  orders       Order[]
+  logs         OperationLog[]
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String       @db.Text
+  price       Decimal      @db.Decimal(10, 2)
+  imageUrl    String
+  status      ProductStatus @default(ACTIVE)
+  popularity  Int          @default(0)
+  soldCount   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  categoryId  Int
+  category    Category     @relation(fields: [categoryId], references: [id])
+  inventory   Inventory?
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+}
+
+model Inventory {
+  id                Int      @id @default(autoincrement())
+  productId         Int      @unique
+  stock             Int
+  reservedStock     Int      @default(0)
+  lowStockThreshold Int      @default(5)
+  updatedAt         DateTime @updatedAt
+  product           Product  @relation(fields: [productId], references: [id])
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+model Order {
+  id              Int         @id @default(autoincrement())
+  userId          Int
+  status          OrderStatus @default(CREATED)
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  shippingName    String
+  shippingPhone   String
+  shippingAddress String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id           Int      @id @default(autoincrement())
+  orderId      Int
+  productId    Int
+  productName  String
+  unitPrice    Decimal  @db.Decimal(10, 2)
+  quantity     Int
+  lineTotal    Decimal  @db.Decimal(10, 2)
+  order        Order    @relation(fields: [orderId], references: [id])
+  product      Product  @relation(fields: [productId], references: [id])
+}
+
+model OperationLog {
+  id          Int           @id @default(autoincrement())
+  userId      Int
+  type        OperationType
+  targetId    Int
+  description String
+  createdAt   DateTime      @default(now())
+  user        User          @relation(fields: [userId], references: [id])
+}

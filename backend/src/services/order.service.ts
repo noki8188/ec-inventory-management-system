@@ -1,6 +1,17 @@
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus, Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { ApiError } from "../utils/errors.js";
+
+type UserOrder = Prisma.OrderGetPayload<{
+  include: { items: true };
+}>;
+
+type AdminOrder = Prisma.OrderGetPayload<{
+  include: {
+    user: { select: { id: true; name: true; email: true } };
+    items: true;
+  };
+}>;
 
 const allowedTransitions: Record<OrderStatus, OrderStatus[]> = {
   CREATED: ["CONFIRMED", "CANCELLED"],
@@ -89,7 +100,7 @@ export async function createOrderFromCart(userId: number, payload: CheckoutPaylo
   });
 }
 
-export async function listOrdersForUser(userId: number) {
+export async function listOrdersForUser(userId: number): Promise<UserOrder[]> {
   return prisma.order.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -97,7 +108,7 @@ export async function listOrdersForUser(userId: number) {
   });
 }
 
-export async function getOrderForUser(userId: number, orderId: number) {
+export async function getOrderForUser(userId: number, orderId: number): Promise<UserOrder> {
   const order = await prisma.order.findFirst({
     where: { id: orderId, userId },
     include: { items: true }
@@ -124,7 +135,7 @@ export async function updateOrderStatus(orderId: number, nextStatus: OrderStatus
   });
 }
 
-export async function listAllOrders() {
+export async function listAllOrders(): Promise<AdminOrder[]> {
   return prisma.order.findMany({
     orderBy: { createdAt: "desc" },
     include: {

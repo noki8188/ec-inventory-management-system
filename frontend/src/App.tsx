@@ -8,6 +8,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { OrdersPage } from "./pages/OrdersPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { AdminAiCopilotPage } from "./pages/admin/AdminAiCopilotPage";
 import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
 import { AdminInventoryPage } from "./pages/admin/AdminInventoryPage";
 import { AdminLogsPage } from "./pages/admin/AdminLogsPage";
@@ -18,6 +19,7 @@ function AdminNav() {
   return (
     <div className="subnav">
       <NavLink to="/admin">ダッシュボード</NavLink>
+      <NavLink to="/admin/ai">AI Copilot</NavLink>
       <NavLink to="/admin/products">商品</NavLink>
       <NavLink to="/admin/inventory">在庫</NavLink>
       <NavLink to="/admin/orders">注文</NavLink>
@@ -48,6 +50,15 @@ export function App() {
               <>
                 <AdminNav />
                 <AdminDashboardPage />
+              </>
+            }
+          />
+          <Route
+            path="/admin/ai"
+            element={
+              <>
+                <AdminNav />
+                <AdminAiCopilotPage />
               </>
             }
           />

@@ -128,6 +128,13 @@ textarea {
   gap: 1.5rem;
 }
 
+.admin-ai-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
 .detail-image {
   border-radius: 24px;
   min-height: 360px;
@@ -189,6 +196,46 @@ textarea {
   gap: 1rem;
 }
 
+.chip-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.metric-card {
+  padding: 1rem;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.9), rgba(255, 247, 237, 0.92));
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.metric-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.table-shell {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  vertical-align: top;
+}
+
+.report-history-item {
+  background: rgba(248, 250, 252, 0.95);
+}
+
 .error-text {
   color: #b91c1c;
 }
@@ -202,6 +249,10 @@ textarea {
   .topbar,
   .page {
     padding: 1rem;
+  }
+
+  .admin-ai-layout {
+    grid-template-columns: 1fr;
   }
 
   .cart-row {

@@ -1,4 +1,4 @@
-import { OperationType, ProductStatus } from "@prisma/client";
+import { OperationType, Prisma, ProductStatus } from "@prisma/client";
 import { config } from "../config.js";
 import { cache } from "../lib/cache.js";
 import { prisma } from "../lib/prisma.js";
@@ -17,7 +17,21 @@ type ProductInput = {
   lowStockThreshold: number;
 };
 
-export async function createProduct(adminUserId: number, input: ProductInput) {
+type AdminProduct = Prisma.ProductGetPayload<{
+  include: { inventory: true; category: true };
+}>;
+
+type LowStockItem = Prisma.InventoryGetPayload<{
+  include: { product: { include: { category: true } } };
+}>;
+
+type AdminLog = Prisma.OperationLogGetPayload<{
+  include: {
+    user: { select: { id: true; name: true; email: true; role: true } };
+  };
+}>;
+
+export async function createProduct(adminUserId: number, input: ProductInput): Promise<AdminProduct> {
   const product = await prisma.product.create({
     data: {
       name: input.name,
@@ -42,7 +56,7 @@ export async function createProduct(adminUserId: number, input: ProductInput) {
   return product;
 }
 
-export async function listAdminProducts() {
+export async function listAdminProducts(): Promise<AdminProduct[]> {
   return prisma.product.findMany({
     orderBy: { createdAt: "desc" },
     include: {
@@ -52,7 +66,11 @@ export async function listAdminProducts() {
   });
 }
 
-export async function updateProduct(adminUserId: number, productId: number, input: Partial<ProductInput>) {
+export async function updateProduct(
+  adminUserId: number,
+  productId: number,
+  input: Partial<ProductInput>
+): Promise<AdminProduct> {
   const existing = await prisma.product.findUnique({ where: { id: productId } });
   if (!existing) {
     throw new ApiError(404, "Product not found.");
@@ -98,7 +116,12 @@ export async function deleteProduct(adminUserId: number, productId: number) {
   await createOperationLog(adminUserId, OperationType.PRODUCT_DELETED, productId, `商品 ${existing.name} を削除しました。`);
 }
 
-export async function updateInventory(adminUserId: number, productId: number, stock: number, lowStockThreshold: number) {
+export async function updateInventory(
+  adminUserId: number,
+  productId: number,
+  stock: number,
+  lowStockThreshold: number
+) {
   const inventory = await prisma.inventory.update({
     where: { productId },
     data: { stock, lowStockThreshold },
@@ -115,9 +138,9 @@ export async function updateInventory(adminUserId: number, productId: number, st
   return inventory;
 }
 
-export async function listLowStockProducts() {
+export async function listLowStockProducts(): Promise<LowStockItem[]> {
   const cacheKey = "low-stock:list";
-  const cached = cache.get(cacheKey);
+  const cached = cache.get<LowStockItem[]>(cacheKey);
   if (cached) return cached;
 
   const items = await prisma.inventory.findMany({
@@ -131,7 +154,7 @@ export async function listLowStockProducts() {
   return filtered;
 }
 
-export async function listLogs() {
+export async function listLogs(): Promise<AdminLog[]> {
   return prisma.operationLog.findMany({
     orderBy: { createdAt: "desc" },
     include: {

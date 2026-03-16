@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
+import { adminAiRouter } from "./routes/admin-ai.routes.js";
 import { config } from "./config.js";
 import { adminRouter } from "./routes/admin.routes.js";
 import { authRouter } from "./routes/auth.routes.js";
@@ -43,5 +44,6 @@ app.use("/cart", cartRouter);
 app.use("/orders", orderRouter);
 app.use("/admin", adminRouter);
 app.use("/admin/orders", adminOrderRouter);
+app.use("/admin/ai", adminAiRouter);
 
 app.use(errorHandler);

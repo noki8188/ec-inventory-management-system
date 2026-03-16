@@ -14,11 +14,22 @@ export type ProductListQuery = {
   pageSize?: number;
 };
 
-export async function listProducts(query: ProductListQuery) {
+type ProductWithRelations = Prisma.ProductGetPayload<{
+  include: { category: true; inventory: true };
+}>;
+
+type ProductListResponse = {
+  items: ProductWithRelations[];
+  page: number;
+  pageSize: number;
+  total: number;
+};
+
+export async function listProducts(query: ProductListQuery): Promise<ProductListResponse> {
   const page = query.page ?? 1;
   const pageSize = query.pageSize ?? 10;
   const cacheKey = `products:${JSON.stringify({ ...query, page, pageSize })}`;
-  const cached = cache.get(cacheKey);
+  const cached = cache.get<ProductListResponse>(cacheKey);
   if (cached) return cached;
 
   const where: Prisma.ProductWhereInput = {
@@ -67,9 +78,9 @@ export async function listProducts(query: ProductListQuery) {
   return result;
 }
 
-export async function getProductById(id: number) {
+export async function getProductById(id: number): Promise<ProductWithRelations> {
   const cacheKey = `product:${id}`;
-  const cached = cache.get(cacheKey);
+  const cached = cache.get<ProductWithRelations>(cacheKey);
   if (cached) return cached;
 
   const product = await prisma.product.findFirst({

@@ -90,7 +90,14 @@ export const swaggerSpec = swaggerJsdoc({
       "/admin/inventory/low-stock": {
         get: { summary: "低在庫一覧取得", security: [{ bearerAuth: [] }], responses: { "200": { description: "OK" } } }
       },
-      "/admin/logs": { get: { summary: "操作ログ取得", security: [{ bearerAuth: [] }], responses: { "200": { description: "OK" } } } }
+      "/admin/logs": { get: { summary: "操作ログ取得", security: [{ bearerAuth: [] }], responses: { "200": { description: "OK" } } } },
+      "/admin/ai/query": {
+        post: { summary: "AI Copilot 自然言語クエリ", security: [{ bearerAuth: [] }], responses: { "200": { description: "OK" } } }
+      },
+      "/admin/ai/reports/daily": {
+        get: { summary: "日報履歴取得", security: [{ bearerAuth: [] }], responses: { "200": { description: "OK" } } },
+        post: { summary: "日報生成", security: [{ bearerAuth: [] }], responses: { "200": { description: "OK" } } }
+      }
     },
     components: {
       securitySchemes: {

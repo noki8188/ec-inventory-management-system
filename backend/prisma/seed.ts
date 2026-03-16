@@ -4,6 +4,7 @@ import { PrismaClient, ProductStatus, Role, OrderStatus, OperationType } from "@
 const prisma = new PrismaClient();
 
 async function main() {
+  await prisma.dailyReportSnapshot.deleteMany();
   await prisma.operationLog.deleteMany();
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();

@@ -6,7 +6,10 @@ type AppContextValue = {
   token: string | null;
   user: AuthUser | null;
   cartCount: number;
+  adminTheme: "light" | "dark";
   setAuth: (token: string | null, user: AuthUser | null) => void;
+  setAdminTheme: (theme: "light" | "dark") => void;
+  toggleAdminTheme: () => void;
   refreshMe: () => Promise<void>;
   refreshCartCount: () => Promise<void>;
   logout: () => void;
@@ -16,6 +19,7 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 const TOKEN_KEY = "small-ec-token";
 const USER_KEY = "small-ec-user";
+const ADMIN_THEME_KEY = "small-ec-admin-theme";
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
@@ -23,7 +27,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const raw = localStorage.getItem(USER_KEY);
     return raw ? (JSON.parse(raw) as AuthUser) : null;
   });
+  const [adminTheme, setAdminThemeState] = useState<"light" | "dark">(() => {
+    return localStorage.getItem(ADMIN_THEME_KEY) === "dark" ? "dark" : "light";
+  });
   const [cartCount, setCartCount] = useState(0);
+
+  const setAdminTheme = (theme: "light" | "dark") => {
+    setAdminThemeState(theme);
+    localStorage.setItem(ADMIN_THEME_KEY, theme);
+  };
+
+  const toggleAdminTheme = () => {
+    setAdminTheme(adminTheme === "dark" ? "light" : "dark");
+  };
 
   const setAuth = (nextToken: string | null, nextUser: AuthUser | null) => {
     setToken(nextToken);
@@ -64,7 +80,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     token,
     user,
     cartCount,
+    adminTheme,
     setAuth,
+    setAdminTheme,
+    toggleAdminTheme,
     refreshMe,
     refreshCartCount,
     logout
